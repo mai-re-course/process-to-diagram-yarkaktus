@@ -1,0 +1,35 @@
+@startuml
+User -> Browser: URI
+alt If there is no match in HSTS
+Browser -> OS: Call function gethostbyname
+alt If there is no match in cache or hosts file
+OS -> DNS_server: ARP request
+DNS_server --> OS: ARP reply с IP
+else If there is a match in cache or hosts
+OS -> OS: IP
+end
+else If there is a match in HSTS
+Browser -> OS: IP
+end
+OS -> Server_OS: TSP Handshake
+OS -> Server_OS: SYN
+Server_OS -> OS: SYN, ACK
+OS -> Server_OS: ACL
+OS -> Browser: Connection established
+Browser -> OS: HTTP request
+OS-> Server_OS: TCP packet
+Server_OS -> HTTP_Server: HTTP request
+activate HTTP_Server
+HTTP_Server -> Server_OS: HTTP answer
+deactivate HTTP_Server
+Server_OS -> OS: TCP package
+OS -> Browser: HTTP package
+activate Browser
+alt Disable keep-alive
+OS -> Server_OS: FIN
+Server_OS -> OS: ACK, FIN
+OS -> Server_OS: ACK
+end
+Browser -> User: Rendered page
+deactivate Browser
+@enduml
